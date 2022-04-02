@@ -29,3 +29,16 @@ gasportsplot <- ggplot(gasports, aes(x = institution_name, y = total_rev_menwome
     geom_boxplot()
 
 gasportsplot
+
+bball <- sports %>%
+    select(sum_partic_men, sum_partic_women, rev_men, rev_women, state_cd, year, sports) %>%
+    filter(year == 2015 & rev_men > 0 & rev_women > 0 & sports == 'Basketball') %>%
+    group_by(state_cd) 
+
+bballperstudent <- bball %>%
+    summarise(
+        dollarpermale = sum(rev_men / sum_partic_men),
+        dollarperfemale = sum(rev_women / sum_partic_women))
+
+anotherbadplot <- ggplot(bballperstudent, aes(x = dollarpermale, y = dollarperfemale, label = state_cd)) +
+    geom_text()
