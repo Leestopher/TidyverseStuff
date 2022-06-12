@@ -9,6 +9,9 @@ library(scales)
 library(ggplot2)
 library(tidytuesdayR)
 library(leaflet)
+library(httpgd)
+
+
 
 httpgd::hgd()
 httpgd::hgd_browse()

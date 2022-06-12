@@ -29,5 +29,7 @@ ggplot(aes(x = industry, y = rank)) +
 geom_boxplot() +
 theme(axis.text.x = element_text(angle = 90))
 
-poll %>% group_by(company) %>%
-select(company,
+poll %>% group_by(industry) %>%
+summarise(mean = mean(`2022_rank`),
+         median = median(`2022_rank`)) %>%
+         arrange(desc(median))
