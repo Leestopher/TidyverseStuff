@@ -19,7 +19,7 @@ donations <- tuesdata$pride_aggregates
 static <- tuesdata$static_list
 
 join_data <- donations %>%
-  inner_join(static, by = "Company")
+  left_join(static, by = "Company")
 
 #Obviously, the more politicians, the more donations.
 join_data %>% ggplot(aes(x = `# of Politicians Contributed to.x`, y = `Total Contributed`, label = Company, color = `HRC Business Pledge`)) +
@@ -28,3 +28,17 @@ geom_jitter(width = 0.5, height = 0.5) +
 scale_x_log10() +
 scale_y_log10()
 
+view(join_data)
+
+alldata <- tuesdata$contribution_data_all_states
+
+alldata %>%
+  count(Politician, sort = TRUE)
+
+alldata %>%
+  filter(!is.na(Company)) %>%
+  count(Politician, Company, sort = TRUE)
+
+alldata %>%
+  filter(!is.na(Company)) %>%
+  count(Politician, wt = Amount, sort = TRUE)
