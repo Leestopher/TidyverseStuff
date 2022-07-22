@@ -14,6 +14,21 @@ library(tidytext)
 
 #install.packages("tidytext")
 
+#install.packages("dplyr")
+#install.packages("tidyverse")
+#install.packages("sf")
+#install.packages("jsonlite")
+#install.packages("leaflet")
+#install.packages("tibbletime")
+#install.packages("ggthemes")
+#install.packages("scales")
+#install.packages("ggplot2")
+#install.packages("tidytuesdayR")
+#install.packages("lubridate")
+#install.packages("httpgd")
+#install.packages("tidytext")
+
+
 httpgd::hgd()
 httpgd::hgd_browse()
 
@@ -44,4 +59,12 @@ deathrow %>%
     scale_x_reordered() +
     facet_wrap(race ~., scales = "free")
 
-#Highest % executed by race is white, then Hispanic followed closely by black    
+#Highest % executed by race is white, then Hispanic followed closely by black
+
+#Time series by year, I assume death penalties decrease over time
+deathrow %>% ggplot(aes(x = sentencing_year, y = n, color = Status)) +
+geom_line()
+
+deathrow %>% group_by(sentencing_year, Status) %>% count(Status) %>%
+    ggplot(aes(x = sentencing_year, y = n, color = Status)) +
+    geom_line()
