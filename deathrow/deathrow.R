@@ -68,3 +68,6 @@ geom_line()
 deathrow %>% group_by(sentencing_year, Status) %>% count(Status) %>%
     ggplot(aes(x = sentencing_year, y = n, color = Status)) +
     geom_line()
+
+deathrow %>% count(race)
+
