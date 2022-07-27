@@ -36,36 +36,16 @@ game_tables <- nm_active %>%
     html_nodes("table.data") %>%
     html_table()
 
-game_tables %>% as.character()
-
-game_tables %>% make_clean_names()
-
-compare_df_cols(game_tables, return = "mismatch")
-
-bind_rows(modify_depth(game_tables, 2, as.factor))
-
-game_tables
-
-data.frame(
-    active_games = active_games,
-    game_codes = game_codes,
-    game_price = game_price
-)
-
-map_dfr(game_tables,
-    ~.x %>%
-    html_nodes("td") %>% mutate(across(everything(), as.double) %>%
-    as_tibble))
-
-game_tables
-
 length(active_games)
 
 #for 1-length(active_games), html_nodes("table.data") %>% html_table %>% pluck(i) tbl[[i]]$i <- i, i <- i + 1
 #In words, this says to go through each table on the site, 1-the current number of active games, and then extract the table.  
 #Give them each a new index, starting at 1, then put them all together in one data frame.
+
 tbl <- list()
+
 i <- 1
+
 for (i in 1:length(active_games)) {
     tbl[[i]] <- nm_active %>%
     html_nodes("table.data") %>%
@@ -82,9 +62,29 @@ tbl
 #Really can't believe this worked.
 #So, first things first, clean column names.
 
+tbl <- tbl %>% rename(Prize = "Prize: th >", Odds = "Approx. Odds 1 in: th >",
+Total_Prizes = "Approx. # of Prizes: th >",
+Remaining_Prizes = "Approx. Prizes Remaining:", Game_Num = i)
+
+tbl$Game_Num = as.num
+
 #Next, join with active_games, game_codes, and game_price.
+
+active_games <- active_games %>% as_tibble() %>% rowid_to_column("Game_Num")
+
+game_codes <- game_codes %>% as_tibble() %>% rowid_to_column("Game_Num")
+
+game_codes$value <- gsub('[Game Number: ]', '', game_codes$value)
+
+game_codes <- game_codes %>% rename(Game_Code = "value")
+
+game_price <- game_price %>% as_tibble() %>% rowid_to_column("Game_Num")
+
+join1 <- inner_join(active_games, tbl, by = "Game_Num") %>%
+    inner_join(game_codes, by = "Game_Num") %>%
+    inner_join(game_price, by = "Game_Num") %>%
+    rename(Game_Name = "value.x", Price = "value.y")
 
 #Now, change data type of columns to numeric, and also fix PRIZE TICKET
 
 #Now, we should be able to calculate Expected Value for each active game.
-
