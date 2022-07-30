@@ -85,12 +85,43 @@ join1 <- inner_join(active_games, tbl, by = "Game_Num") %>%
 
 #Fix Prize Ticket in Prize column.
 join1$Prize <- with(join1, ifelse(Prize == "PRIZE TICKET", "$0", Prize))
+join1$Prize <- with(join1, ifelse(Prize == "Prize Ticket", "$0", Prize))
+join1$Prize <- with(join1, ifelse(Prize == "Ticket", "$0", Prize))
+
+
 
 #chr to numeric
 join1
 
-join1$Odds <- as.numeric(gsub(",", "", join1$Odds))
-join1$Total_Prizes <- as.numeric(gsub(",", "", join1$Total_Prizes))
-join1$Remaining_Prizes <- as.numeric(gsub(",", "", join1$Remaining_Prizes))
+join1$Prize <- gsub("\\$", "", join1$Prize)
+join1$Prize <- gsub(",", "", join1$Prize)
+join1$Odds <- gsub(",", "", join1$Odds)
+join1$Total_Prizes <- gsub(",", "", join1$Total_Prizes)
+join1$Remaining_Prizes <- gsub(",", "", join1$Remaining_Prizes)
+join1$Price <- gsub("\\$", "", join1$Price)
+
+options(digits = 10)
+join1$Odds <- as.numeric(join1$Odds)
+join1$Price <- as.numeric(join1$Price)
+join1$Total_Prizes <- as.numeric(join1$Total_Prizes)
+join1$Remaining_Prizes <- as.numeric(join1$Remaining_Prizes)
+join1$Prize <- as.numeric(join1$Prize)
 
 #Now, we should be able to calculate Expected Value for each active game.
+ev <- join1 %>% group_by(Game_Name) %>%
+    mutate(Total_Tickets = (max(Total_Prizes) * min(Odds)),
+    Tickets_Rem = (max(Remaining_Prizes) * min(Odds)),
+    Current_Odds = (Remaining_Prizes / Tickets_Rem),
+    Lose_Odds = ((1-sum(Current_Odds)) * Price * (-1)))
+
+ev %>% filter(Prize > 0) %>%
+    summarise(Expected_Value = (sum(Current_Odds * Prize)) + Lose_Odds) %>%
+    slice(which.max(Expected_Value)) %>%
+    arrange(desc(Expected_Value))
+
+ev
+
+ev %>% group_by(Game_name)
+
+ev %>% filter(Prize <1) %>%
+    mutate(Tickets_minusfree = Tickets_Rem - Remaining_Prizes)
