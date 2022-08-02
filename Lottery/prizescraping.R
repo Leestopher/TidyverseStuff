@@ -88,8 +88,6 @@ join1$Prize <- with(join1, ifelse(Prize == "PRIZE TICKET", "$0", Prize))
 join1$Prize <- with(join1, ifelse(Prize == "Prize Ticket", "$0", Prize))
 join1$Prize <- with(join1, ifelse(Prize == "Ticket", "$0", Prize))
 
-
-
 #chr to numeric
 join1
 
@@ -114,14 +112,25 @@ ev <- join1 %>% group_by(Game_Name) %>%
     Current_Odds = (Remaining_Prizes / Tickets_Rem),
     Lose_Odds = ((1-sum(Current_Odds)) * Price * (-1)))
 
-ev %>% filter(Prize > 0) %>%
+#This removes the Free Tickets from the Tickets_Rem column.
+Actual_Tix <- ev %>% filter(Prize <1) %>%
+    mutate(Tickets_minusfree = Tickets_Rem - Remaining_Prizes) %>%
+    select(-Prize, -Odds, -Total_Prizes, -Remaining_Prizes, -Tickets_Rem,
+    -Price, -Total_Tickets, -Current_Odds, -Lose_Odds)
+
+#This joins the ev and Actual_Tix data frames.
+join2 <- left_join(ev, Actual_Tix, by = "Game_Name") %>%
+    mutate(Final_Tickets = coalesce(Tickets_minusfree, Tickets_Rem),
+    Current_Odds = (Remaining_Prizes / Final_Tickets),
+    Expected_Value = (sum(Current_Odds * Prize)) + Lose_Odds) %>%
+    slice(which.max(Expected_Value)) %>%
+    arrange(desc(Expected_Value))
+
+#Calculates Expected value for each game.
+final <- join2 %>% filter(Prize > 0) %>%
     summarise(Expected_Value = (sum(Current_Odds * Prize)) + Lose_Odds) %>%
     slice(which.max(Expected_Value)) %>%
     arrange(desc(Expected_Value))
 
-ev
-
-ev %>% group_by(Game_name)
-
-ev %>% filter(Prize <1) %>%
-    mutate(Tickets_minusfree = Tickets_Rem - Remaining_Prizes)
+#Hooray!
+view(final)
