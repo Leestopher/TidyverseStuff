@@ -38,7 +38,7 @@ deathrow %>%
     mutate(freq = n / sum(n)) %>%
     ungroup() %>%
     mutate(Status = reorder_within(Status, freq, race)) %>%
-    ggplot(aes(x = Status, freq)) +
+    ggplot(aes(x = Status, freq, fill = race)) +
     geom_col() +
     coord_flip() +
     scale_x_reordered() +
